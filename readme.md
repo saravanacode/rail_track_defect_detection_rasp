@@ -9,3 +9,8 @@ chmod +x gstreamer_server.sh
 
 Run the server script:
 ./gstreamer_server.sh
+
+
+
+
+sudo apt install -y gstreamer1.0-plugins-ugly gstreamer1.0-plugins-bad gstreamer1.0-libav
