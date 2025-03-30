@@ -1,18 +1,28 @@
+#!/usr/bin/env python3
 import io
 import logging
 import socketserver
 from threading import Condition
 from http import server
-
 # Import Picamera2 libraries
 from picamera2 import Picamera2
 from picamera2.encoders import JpegEncoder
 from picamera2.outputs import FileOutput
-
 # Determine the Raspberry Pi's IP address dynamically
 import socket
 hostname = socket.gethostname()
 ip_address = socket.gethostbyname(hostname)
+
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('/var/log/camera_stream.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
 PAGE = f"""\
 <!DOCTYPE html>
@@ -32,7 +42,7 @@ class StreamingOutput(io.BufferedIOBase):
         self.frame = None
         self.buffer = io.BytesIO()
         self.condition = Condition()
-
+    
     def write(self, buf):
         if buf.startswith(b'\xff\xd8'):
             # New frame, copy the existing buffer's content and notify all
@@ -87,25 +97,34 @@ class StreamingServer(socketserver.ThreadingMixIn, server.HTTPServer):
     allow_reuse_address = True
     daemon_threads = True
 
-# Initialize and configure the camera
-picam2 = Picamera2()
-video_config = picam2.create_video_configuration(main={"size": (640, 480)})
-picam2.configure(video_config)
-picam2.start()
+def main():
+    try:
+        # Initialize and configure the camera
+        picam2 = Picamera2()
+        video_config = picam2.create_video_configuration(main={"size": (640, 480)})
+        picam2.configure(video_config)
+        picam2.start()
+        
+        # Set up the output
+        global output
+        output = StreamingOutput()
+        encoder = JpegEncoder(q=70)  # Quality set to 70 for better performance
+        
+        # Start recording
+        picam2.start_encoder(encoder, FileOutput(output))
+        
+        # Start server
+        address = ('', 8000)
+        server = StreamingServer(address, StreamingHandler)
+        logger.info(f"Server started. Access stream at http://{ip_address}:8000")
+        server.serve_forever()
+    except Exception as e:
+        logger.error(f"Error in main function: {e}")
+    finally:
+        # Cleanup
+        logger.info("Shutting down camera...")
+        picam2.stop_encoder()
+        picam2.stop()
 
-# Set up the output
-output = StreamingOutput()
-encoder = JpegEncoder(q=70)  # Quality set to 70 for better performance
-
-# Start recording
-picam2.start_encoder(encoder, FileOutput(output))
-
-try:
-    address = ('', 8000)
-    server = StreamingServer(address, StreamingHandler)
-    print(f"Server started. Access stream at http://{ip_address}:8000")
-    server.serve_forever()
-finally:
-    # Cleanup
-    picam2.stop_encoder()
-    picam2.stop()
+if __name__ == "__main__":
+    main()
