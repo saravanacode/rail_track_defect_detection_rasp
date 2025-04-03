@@ -28,3 +28,7 @@ tcpserversink host=192.168.1.9 port=5000
 
 git clone https://github.com/mastersubhajit/video_streaming_with_raspberry_pi_camera_module.git
 
+
+
+https://forums.raspberrypi.com/viewtopic.php?p=462982#p462982
+
