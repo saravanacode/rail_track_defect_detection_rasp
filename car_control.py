@@ -50,8 +50,8 @@ while True:
         print("Run Motors")
         GPIO.output(in1, GPIO.HIGH)
         GPIO.output(in2, GPIO.LOW)
-        GPIO.output(in3, GPIO.HIGH)
-        GPIO.output(in4, GPIO.LOW)
+        GPIO.output(in3, GPIO.HIGH)  # Fixed Direction
+        GPIO.output(in4, GPIO.LOW)   # Fixed Direction
 
     elif x == 's':  # Stop Both Motors
         print("Stop")
@@ -64,15 +64,15 @@ while True:
         print("Moving Forward")
         GPIO.output(in1, GPIO.HIGH)
         GPIO.output(in2, GPIO.LOW)
-        GPIO.output(in3, GPIO.HIGH)
-        GPIO.output(in4, GPIO.LOW)
+        GPIO.output(in3, GPIO.HIGH)  # Fixed Direction
+        GPIO.output(in4, GPIO.LOW)   # Fixed Direction
 
     elif x == 'b':  # Move Backward
         print("Moving Backward")
         GPIO.output(in1, GPIO.LOW)
         GPIO.output(in2, GPIO.HIGH)
-        GPIO.output(in3, GPIO.LOW)
-        GPIO.output(in4, GPIO.HIGH)
+        GPIO.output(in3, GPIO.LOW)   # Fixed Direction
+        GPIO.output(in4, GPIO.HIGH)  # Fixed Direction
 
     elif x == 'l':  # Low Speed
         print("Setting Speed: Low")
